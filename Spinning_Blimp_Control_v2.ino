@@ -26,7 +26,7 @@ init_flags_t init_flags = {
   .sensors = false,
   .escarm = true,
   .UDP = true,
-  .Ibus = true,
+  .Ibus = false,
   .ESPNOW = true,
   .PORT = 1345,
   .motor_type = 1,
@@ -57,7 +57,7 @@ init_sensors_t init_sensors = {
 
 // BangBang
 float tau = 0;
-float yaw_calibrate = -1.6;
+float yaw_calibrate = -0.375*0.5*4.5*0.25 * PI;
 
 // Time of flight sensor init
 float wall = 0.0;
@@ -111,7 +111,7 @@ feedback_t feedbackPD = {
   .Cpitch = 0, 
   .Cyaw = 1,
   .Cx = 1,
-  .Cy = 0,
+  .Cy = 1,
   .Cz = 1,
   .Cabsz = 1,
 
@@ -534,7 +534,7 @@ void getOutputs(controller_t *controls, sensors_t *sensors, actuation_t *out ){
       // Serial.println(sensors->yaw);
 
     //BangBang control
-      float joytheta = atan2(controls->fy,-controls->fx);  
+      float joytheta = atan2(controls->fy,controls->fx);  
       float joymag  = sqrt(pow(controls->fx,2) + pow(controls->fy,2));
       // wall = sensor.read();
       // Serial.println(wall);
@@ -572,7 +572,7 @@ void getOutputs(controller_t *controls, sensors_t *sensors, actuation_t *out ){
     out->s2 = blimp.clamp(t2, 0, 0)/(PI);
     out->m1 = blimp.clamp(f1, 0.0, 1.0);
     out->m2 = blimp.clamp(f2, 0.0, 1.0);
-    send_udp_feedback(sensors->estimatedZ, sensors->groundZ, yaw, f1, f2);
+    send_udp_feedback(sensors->estimatedZ, joytheta, yaw, f1, f2);
 
     // Serial.println(out->m1);
 
